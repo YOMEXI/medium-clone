@@ -5,18 +5,32 @@ import { Observable, map } from 'rxjs';
 import { CurrentUserInterface } from '../../shared/types/CurrentUser.interface';
 import { environment } from '../../../environments/environment.development';
 import { AuthResponse } from '../types/authResponse.interface';
+import { LoginRequestInterface } from '../types/loginRequest.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private http = inject(HttpClient);
+  constructor(private http: HttpClient) {}
 
-  constructor() {}
+  getUser(response: AuthResponse): CurrentUserInterface {
+    return response.user;
+  }
 
+  getCurrentUser(): Observable<CurrentUserInterface> {
+    return this.http
+      .get<AuthResponse>(environment.baseUrl + '/users')
+      .pipe(map(this.getUser));
+  }
   register(data: RegisterRequestInterface): Observable<CurrentUserInterface> {
     return this.http
       .post<AuthResponse>(environment.baseUrl + '/users', data)
-      .pipe(map((response) => response.user));
+      .pipe(map(this.getUser));
+  }
+
+  login(data: LoginRequestInterface): Observable<CurrentUserInterface> {
+    return this.http
+      .post<AuthResponse>(environment.baseUrl + '/users/login', data)
+      .pipe(map(this.getUser));
   }
 }
